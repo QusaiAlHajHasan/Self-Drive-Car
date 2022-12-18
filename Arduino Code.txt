@@ -1,0 +1,197 @@
+// Defines Pins Numbers.
+int US1_Echo = A0;
+int US1_Trig = A1; 
+int US3_Echo = A2;
+int US3_Trig = A3;
+int US2_Echo = A4;
+int US2_Trig = A5;
+int Buzzer = 2;
+int EN_A = 5;
+int EN_B = 6;
+int Input_1 = 7;
+int Input_2 = 8;
+int Input_3 = 9;
+int Input_4 = 10;
+int TFS_1 = 11;
+int TFS_2 = 12;
+
+////////////////////////////////////////////////////
+
+// Defines Variables
+long duration_1;
+int distance_1;
+long duration_2;
+int distance_2;
+long duration_3;
+int distance_3;
+
+////////////////////////////////////////////////////
+
+void buzzer()
+{
+  digitalWrite(Buzzer, HIGH);
+  delay(500);
+  digitalWrite(Buzzer, LOW);
+  delay(500);
+}
+
+///////////////////////////////////////////////////
+
+void motor_on()
+{
+  digitalWrite(Input_1, LOW);
+  digitalWrite(Input_2, HIGH);
+  digitalWrite(Input_3, HIGH);
+  digitalWrite(Input_4, LOW);
+  analogWrite(EN_A, 255);
+  analogWrite(EN_B, 255);
+}
+
+///////////////////////////////////////////////////
+
+void motor_off()
+{
+  digitalWrite(Input_1, LOW);
+  digitalWrite(Input_2, LOW);
+  digitalWrite(Input_3, LOW);
+  digitalWrite(Input_4, LOW);
+  analogWrite(EN_A, 0);
+  analogWrite(EN_B, 0);
+}
+
+///////////////////////////////////////////////////
+
+void us_read()
+{
+  // Read from ultrasonic sensor 1.
+  digitalWrite(US1_Trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(US1_Trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(US1_Trig, LOW);
+  duration_1 = pulseIn(US1_Echo, HIGH);
+  distance_1= ((duration_1)*(0.034/2));
+      
+  // Read from ultrasonic sensor 2.
+  digitalWrite(US2_Trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(US2_Trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(US2_Trig, LOW);
+  duration_2 = pulseIn(US2_Echo, HIGH);
+  distance_2= ((duration_2)*(0.034/2));
+      
+  // Read from ultrasonic sensor 3.
+  digitalWrite(US3_Trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(US3_Trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(US3_Trig, LOW);
+  duration_3 = pulseIn(US3_Echo, HIGH);
+  distance_3= ((duration_3)*(0.034/2));
+}
+
+///////////////////////////////////////////////////
+
+void tfs_read()
+{
+  // Read from tracking line follower sensor. 
+  TFS_1 = digitalRead(11);
+  TFS_2 = digitalRead(12);
+}
+
+///////////////////////////////////////////////////
+
+void right()
+{
+  digitalWrite(Input_1, LOW);
+  digitalWrite(Input_2, HIGH);
+  digitalWrite(Input_3, LOW);
+  digitalWrite(Input_4, LOW);
+  analogWrite(EN_A, 0);
+  analogWrite(EN_B, 100);
+}
+
+///////////////////////////////////////////////////
+
+void left()
+{
+  digitalWrite(Input_1, LOW);
+  digitalWrite(Input_2, LOW);
+  digitalWrite(Input_3, HIGH);
+  digitalWrite(Input_4, LOW);
+  analogWrite(EN_A, 100);
+  analogWrite(EN_B, 0);
+}
+
+///////////////////////////////////////////////////
+
+void setup() 
+{
+  Serial.begin(9600);  
+  pinMode(US3_Echo , INPUT);
+  pinMode(US3_Trig , OUTPUT);
+  pinMode(US2_Echo , INPUT);
+  pinMode(US2_Trig , OUTPUT);
+  pinMode(US1_Echo , INPUT);
+  pinMode(US1_Trig , OUTPUT);
+  pinMode(EN_B , OUTPUT);
+  pinMode(EN_A , OUTPUT);
+  pinMode(Input_1 , OUTPUT);
+  pinMode(Input_2 , OUTPUT);
+  pinMode(Input_3 , OUTPUT);
+  pinMode(Input_4 , OUTPUT);
+  pinMode(TFS_1 , INPUT);
+  pinMode(TFS_2 , INPUT);
+  pinMode(Buzzer , OUTPUT);
+}
+
+////////////////////////////////////////////////////
+
+void loop() 
+{
+      tfs_read();
+      us_read();
+      motor_on();
+
+      if((TFS_1 == HIGH) && (TFS_2 == HIGH))
+      {
+        motor_on();
+        if (safetyDistance_1 <= 6)
+        {
+           motor_off();
+           buzzer();
+        }
+        if (safetyDistance_2 <= 6)
+        {
+           motor_off();
+           buzzer();
+        }
+        if (safetyDistance_3 <= 6)
+        {
+           motor_off();
+           buzzer();
+        }
+      }
+
+      if((TFS_1 == LOW) && (TFS_2 == HIGH))
+      {
+        left();
+      }
+
+      if((TFS_1 == HIGH) && (TFS_2 == LOW))
+      {
+        right();
+      }
+
+      if((TFS_1 == LOW) && (TFS_2 == LOW))
+      {
+        motor_off();
+      }
+    }
+    
+    else if(res == EQ)
+    {
+      motor_off();
+    }
+}
